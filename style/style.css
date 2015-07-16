@@ -1,0 +1,12 @@
+body {
+    background-color: #151617;
+    margin: 0;
+    overflow: hidden;
+}
+
+#container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-image: linear-gradient(#353637, #151617);
+}

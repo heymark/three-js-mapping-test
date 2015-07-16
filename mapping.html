@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Three.js Mapping Test</title>
+    <meta charset="UTF-8">
+    <meta name='viewport' content='width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0'>
+    <link rel="stylesheet" type="text/css" href="style/style.css">
+    <script src='js/three.min.js'></script>
+    <script src='js/BoxGeometry.js'></script>
+    <script src='js/Detector.js'></script>
+    <script src='js/OrbitControls.js'></script>
+</head>
+
+<body>
+    <div id="container"></div>
+    <script>
+        window.onload = function () {
+
+            if (!Detector.webgl) { Detector.addGetWebGLMessage(); }
+
+            var container, scene, camera, renderer;
+
+            function addLight() {
+                
+                var ambientLight = new THREE.AmbientLight(0xc0c0c0);
+                scene.add(ambientLight);
+                
+                var directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+                directionalLight.position.set(1, 1.5, 0);
+                scene.add(directionalLight);
+                
+                var hemiLight = new THREE.HemisphereLight(0xff0000, 0x00ffff, 0.1);
+                scene.add(hemiLight);
+            }
+
+            function addModel() {
+
+                var boxModel = new THREE.BoxGeometry(1, 1, 1);
+                var boxTexture = new THREE.MeshLambertMaterial({ color: 0x999999 });
+                var box = new THREE.Mesh(boxModel, boxTexture);
+                
+                box.position.set(0, 0.5, 0);
+                scene.add(box);
+            }
+
+            function onWindowResize() {
+
+                camera.aspect = container.offsetWidth / container.offsetHeight;
+                camera.updateProjectionMatrix();
+
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                render();
+            }
+
+            function ready() {
+
+                // Create scene
+                scene = new THREE.Scene();
+                
+                // Add grid
+                var grid = new THREE.GridHelper(2, 1);
+                grid.setColors(0x333333, 0x333333);
+                scene.add(grid);
+
+                // Set up renderer
+                renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                renderer.setClearColor(0x000000, 0);
+                renderer.setPixelRatio(window.devicePixelRatio);
+                renderer.setSize(window.innerWidth, window.innerHeight);
+
+                // Add renderer to page
+                container = document.getElementById('container');
+                container.appendChild(renderer.domElement);
+
+                // Set up camera 
+                var aspect = container.offsetWidth / container.offsetHeight;
+                camera = new THREE.PerspectiveCamera(60, aspect, 0.01, 50);
+
+                // Set up orbit controls
+                orbit = new THREE.OrbitControls(camera, container);
+                orbit.addEventListener('change', render);
+
+                // Set camera position
+                camera.position.x = 2;
+                camera.position.y = 2;
+                camera.position.z = 2;
+
+                // Set up camera target
+                var target = new THREE.Vector3(0, 1, 0);
+                camera.lookAt(target);
+                orbit.target = target;
+                
+                // Update camera
+                camera.updateProjectionMatrix();
+
+                // Add light and model
+                addLight();
+                addModel();
+                
+                // Add window resize listener
+                window.addEventListener('resize', onWindowResize, false);
+            }
+            
+            function render() { renderer.render(scene, camera); }
+
+            // Build scene
+            ready();
+            
+            // Render
+            render();
+
+        };
+    </script>
+</body>
+
+</html>
