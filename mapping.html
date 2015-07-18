@@ -17,29 +17,47 @@
     <script>
         window.onload = function () {
 
-            if (!Detector.webgl) { Detector.addGetWebGLMessage(); }
+            if (!Detector.webgl) {
+                Detector.addGetWebGLMessage();
+            }
 
-            var container, scene, camera, renderer;
+            var box, boxMaterial, boxModel, boxNormal, boxSpec, boxTexture, container, scene, camera, renderer;
 
             function addLight() {
-                
+
                 var ambientLight = new THREE.AmbientLight(0xc0c0c0);
                 scene.add(ambientLight);
-                
+
                 var directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
                 directionalLight.position.set(1, 1.5, 0);
                 scene.add(directionalLight);
-                
+
                 var hemiLight = new THREE.HemisphereLight(0xff0000, 0x00ffff, 0.1);
                 scene.add(hemiLight);
             }
 
             function addModel() {
 
-                var boxModel = new THREE.BoxGeometry(1, 1, 1);
-                var boxTexture = new THREE.MeshLambertMaterial({ color: 0x999999 });
-                var box = new THREE.Mesh(boxModel, boxTexture);
-                
+                boxModel = new THREE.BoxGeometry(3, 3, 3);
+
+                // Load diffuse map
+                boxTexture = THREE.ImageUtils.loadTexture("images/165-rock-diffuse.jpg");
+                boxTexture.anisotropy = renderer.getMaxAnisotropy();
+
+                // Load normal map
+                boxNormal = THREE.ImageUtils.loadTexture("images/165-rock-normal.jpg");
+                boxNormal.anisotropy = renderer.getMaxAnisotropy();
+
+                // Set up material
+                boxMaterial = new THREE.MeshPhongMaterial({
+                    map: boxTexture,
+                    normalMap: boxNormal
+                });
+                boxMaterial.shininess = 50;
+                boxMaterial.specular = new THREE.Color("rgb(255, 225, 200)");
+
+                // Create and position box
+                box = new THREE.Mesh(boxModel, boxMaterial);
                 box.position.set(0, 0.5, 0);
                 scene.add(box);
             }
@@ -57,14 +75,17 @@
 
                 // Create scene
                 scene = new THREE.Scene();
-                
-                // Add grid
+
+                /* Add grid
                 var grid = new THREE.GridHelper(2, 1);
                 grid.setColors(0x333333, 0x333333);
-                scene.add(grid);
+                scene.add(grid); */
 
                 // Set up renderer
-                renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                renderer = new THREE.WebGLRenderer({
+                    antialias: true,
+                    alpha: true
+                });
                 renderer.setClearColor(0x000000, 0);
                 renderer.setPixelRatio(window.devicePixelRatio);
                 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -77,9 +98,9 @@
                 var aspect = container.offsetWidth / container.offsetHeight;
                 camera = new THREE.PerspectiveCamera(60, aspect, 0.01, 50);
 
-                // Set up orbit controls
+                /* Set up orbit controls
                 orbit = new THREE.OrbitControls(camera, container);
-                orbit.addEventListener('change', render);
+                orbit.addEventListener('change', render); */
 
                 // Set camera position
                 camera.position.x = 2;
@@ -89,27 +110,32 @@
                 // Set up camera target
                 var target = new THREE.Vector3(0, 1, 0);
                 camera.lookAt(target);
-                orbit.target = target;
-                
+                /* orbit.target = target; */
+
                 // Update camera
                 camera.updateProjectionMatrix();
 
                 // Add light and model
                 addLight();
                 addModel();
-                
+
                 // Add window resize listener
                 window.addEventListener('resize', onWindowResize, false);
             }
-            
-            function render() { renderer.render(scene, camera); }
+
+            function render() {
+                requestAnimationFrame(render);
+                renderer.render(scene, camera);
+
+                box.rotation.x += 0.005;
+                box.rotation.y += 0.005;
+            }
 
             // Build scene
             ready();
-            
+
             // Render
             render();
-
         };
     </script>
 </body>
