@@ -21,21 +21,26 @@
                 Detector.addGetWebGLMessage();
             }
 
-            var box, boxMaterial, boxModel, boxNormal, boxSpec, boxTexture, container, scene, camera, renderer;
+            var ball, ballMaterial, ballModel, ballNormal, ballSpec, ballTexture, container, scene, camera, renderer;
 
             function addLight() {
 
-                var ambientLight = new THREE.AmbientLight(0xc0c0c0);
+                var ambientLight = new THREE.AmbientLight(0x909090);
                 scene.add(ambientLight);
 
                 var directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
-                directionalLight.position.set(1, 1.5, 0);
+                directionalLight.position.set(0, 0.5, -1);
                 scene.add(directionalLight);
 
-                var hemiLight = new THREE.HemisphereLight(0xff0000, 0x00ffff, 0.1);
-                scene.add(hemiLight);
+                var directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+                directionalLight.position.set(-2, -2, -1);
+                scene.add(directionalLight);
+
+                // var hemiLight = new THREE.HemisphereLight(0xff0000, 0x00ffff, 0.1);
+                // scene.add(hemiLight);
             }
 
+            /*
             function addModel() {
 
                 boxModel = new THREE.BoxGeometry(3, 3, 3);
@@ -60,6 +65,33 @@
                 box = new THREE.Mesh(boxModel, boxMaterial);
                 box.position.set(0, 0.5, 0);
                 scene.add(box);
+            }
+            */
+
+            function addModel() {
+
+                ballModel = new THREE.SphereGeometry(1.5, 32, 32);
+
+                // Load diffuse map
+                ballTexture = THREE.ImageUtils.loadTexture("images/165-rock-diffuse.jpg");
+                ballTexture.anisotropy = renderer.getMaxAnisotropy();
+
+                // Load normal map
+                ballNormal = THREE.ImageUtils.loadTexture("images/165-rock-normal.jpg");
+                ballNormal.anisotropy = renderer.getMaxAnisotropy();
+
+                // Set up material
+                ballMaterial = new THREE.MeshPhongMaterial({
+                    map: ballTexture,
+                    normalMap: ballNormal
+                });
+                ballMaterial.shininess = 50;
+                ballMaterial.specular = new THREE.Color("rgb(255, 225, 200)");
+
+                // Create and position ball
+                ball = new THREE.Mesh(ballModel, ballMaterial);
+                ball.position.set(0, 1, 0);
+                scene.add(ball);
             }
 
             function onWindowResize() {
@@ -127,8 +159,8 @@
                 requestAnimationFrame(render);
                 renderer.render(scene, camera);
 
-                box.rotation.x += 0.005;
-                box.rotation.y += 0.005;
+                ball.rotation.x += 0.005;
+                ball.rotation.y += 0.005;
             }
 
             // Build scene
