@@ -21,7 +21,8 @@
                 Detector.addGetWebGLMessage();
             }
 
-            var ball, ballMaterial, ballModel, ballNormal, ballSpec, ballTexture, container, scene, camera, renderer;
+            var ball, ballMaterial, ballModel, ballNormal, ballSpec, ballTexture, color,
+                container, scene, camera, renderer;
 
             function addLight() {
 
@@ -36,8 +37,8 @@
                 directionalLight.position.set(-2, -2, -1);
                 scene.add(directionalLight);
 
-                // var hemiLight = new THREE.HemisphereLight(0xff0000, 0x00ffff, 0.1);
-                // scene.add(hemiLight);
+                var hemiLight = new THREE.HemisphereLight(0xff0000, 0x00ffff, 0.05);
+                scene.add(hemiLight);
             }
 
             /*
@@ -70,7 +71,7 @@
 
             function addModel() {
 
-                ballModel = new THREE.SphereGeometry(1.5, 32, 32);
+                ballModel = new THREE.SphereGeometry(1.25, 32, 32);
 
                 // Load diffuse map
                 ballTexture = THREE.ImageUtils.loadTexture("images/165-rock-diffuse.jpg");
@@ -80,18 +81,45 @@
                 ballNormal = THREE.ImageUtils.loadTexture("images/165-rock-normal.jpg");
                 ballNormal.anisotropy = renderer.getMaxAnisotropy();
 
+                /* Load specular map
+                ballSpec = THREE.ImageUtils.loadTexture("images/grid.png");
+                ballSpec.anisotropy = renderer.getMaxAnisotropy(); */
+
                 // Set up material
                 ballMaterial = new THREE.MeshPhongMaterial({
                     map: ballTexture,
                     normalMap: ballNormal
                 });
-                ballMaterial.shininess = 50;
+                ballMaterial.color = new THREE.Color("rgb(255, 0, 200)");
+                ballMaterial.shininess = 30;
                 ballMaterial.specular = new THREE.Color("rgb(255, 225, 200)");
 
                 // Create and position ball
                 ball = new THREE.Mesh(ballModel, ballMaterial);
                 ball.position.set(0, 1, 0);
                 scene.add(ball);
+            }
+
+            function colorCycle(target) {
+
+                var clamp = 2,
+                    gain = 0.25;
+
+                color = color < 3 ? color + 0.005 : 0;
+
+                if (color < 1) {
+                    target.color.r = color / clamp + gain;
+                    target.color.g = gain;
+                    target.color.b = (1 - color) / clamp + gain;
+                } else if (color < 2) {
+                    target.color.r = (2 - color) / clamp + gain;
+                    target.color.g = (color - 1) / clamp + gain;
+                    target.color.b = gain;
+                } else {
+                    target.color.r = gain;
+                    target.color.g = (3 - color) / clamp + gain;
+                    target.color.b = (color - 2) / clamp + gain;
+                }
             }
 
             function onWindowResize() {
@@ -161,6 +189,8 @@
 
                 ball.rotation.x += 0.005;
                 ball.rotation.y += 0.005;
+
+                colorCycle(ballMaterial);
             }
 
             // Build scene
