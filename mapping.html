@@ -7,9 +7,7 @@
     <meta name='viewport' content='width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0'>
     <link rel="stylesheet" type="text/css" href="style/style.css">
     <script src='js/three.min.js'></script>
-    <script src='js/BoxGeometry.js'></script>
     <script src='js/Detector.js'></script>
-    <script src='js/OrbitControls.js'></script>
 </head>
 
 <body>
@@ -21,14 +19,17 @@
                 Detector.addGetWebGLMessage();
             }
 
-            var ball, ballMaterial, ballModel, ballNormal, ballSpec, ballTexture, color,
-                container, scene, camera, renderer;
+            var ball, ballMaterial, ballModel, ballNormal, ballSpec, ballTexture;
+
+            var camera, color, container, pivot, renderer, scene;
 
             function addLight() {
 
+                // Add ambient light
                 var ambientLight = new THREE.AmbientLight(0x909090);
                 scene.add(ambientLight);
 
+                // Add directional lights
                 var directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
                 directionalLight.position.set(0, 0.5, -1);
                 scene.add(directionalLight);
@@ -37,37 +38,26 @@
                 directionalLight.position.set(-2, -2, -1);
                 scene.add(directionalLight);
 
-                var hemiLight = new THREE.HemisphereLight(0xff0000, 0x00ffff, 0.05);
+                // Add hemisphere light
+                var hemiLight = new THREE.HemisphereLight(0xff0000, 0x00ffff, 0.025);
                 scene.add(hemiLight);
+
+                // Create point light
+                var pointLight = new THREE.PointLight(0xffccaa, 1, 0);
+                pointLight.position.set(1.5, 1, 1.5);
+                pointLight.name = "pointLight";
+
+                // Create pivot point and add point light
+                var pivotPoint = new THREE.Object3D();
+                pivotPoint.position = (0, 1, 0);
+                pivotPoint.add(pointLight);
+
+                // Create pivot object to control point light position
+                pivot = new THREE.Object3D();
+                pivot.position = pivotPoint.position;
+                pivot.add(pivotPoint);
+                scene.add(pivot);
             }
-
-            /*
-            function addModel() {
-
-                boxModel = new THREE.BoxGeometry(3, 3, 3);
-
-                // Load diffuse map
-                boxTexture = THREE.ImageUtils.loadTexture("images/165-rock-diffuse.jpg");
-                boxTexture.anisotropy = renderer.getMaxAnisotropy();
-
-                // Load normal map
-                boxNormal = THREE.ImageUtils.loadTexture("images/165-rock-normal.jpg");
-                boxNormal.anisotropy = renderer.getMaxAnisotropy();
-
-                // Set up material
-                boxMaterial = new THREE.MeshPhongMaterial({
-                    map: boxTexture,
-                    normalMap: boxNormal
-                });
-                boxMaterial.shininess = 50;
-                boxMaterial.specular = new THREE.Color("rgb(255, 225, 200)");
-
-                // Create and position box
-                box = new THREE.Mesh(boxModel, boxMaterial);
-                box.position.set(0, 0.5, 0);
-                scene.add(box);
-            }
-            */
 
             function addModel() {
 
@@ -91,7 +81,7 @@
                     normalMap: ballNormal
                 });
                 ballMaterial.color = new THREE.Color("rgb(255, 0, 200)");
-                ballMaterial.shininess = 30;
+                ballMaterial.shininess = 100;
                 ballMaterial.specular = new THREE.Color("rgb(255, 225, 200)");
 
                 // Create and position ball
@@ -136,11 +126,6 @@
                 // Create scene
                 scene = new THREE.Scene();
 
-                /* Add grid
-                var grid = new THREE.GridHelper(2, 1);
-                grid.setColors(0x333333, 0x333333);
-                scene.add(grid); */
-
                 // Set up renderer
                 renderer = new THREE.WebGLRenderer({
                     antialias: true,
@@ -158,10 +143,6 @@
                 var aspect = container.offsetWidth / container.offsetHeight;
                 camera = new THREE.PerspectiveCamera(60, aspect, 0.01, 50);
 
-                /* Set up orbit controls
-                orbit = new THREE.OrbitControls(camera, container);
-                orbit.addEventListener('change', render); */
-
                 // Set camera position
                 camera.position.x = 2;
                 camera.position.y = 2;
@@ -170,7 +151,6 @@
                 // Set up camera target
                 var target = new THREE.Vector3(0, 1, 0);
                 camera.lookAt(target);
-                /* orbit.target = target; */
 
                 // Update camera
                 camera.updateProjectionMatrix();
@@ -190,7 +170,11 @@
                 ball.rotation.x += 0.005;
                 ball.rotation.y += 0.005;
 
+                pivot.rotation.x = ball.rotation.x;
+                pivot.rotation.y = -5 * ball.rotation.y;
+
                 colorCycle(ballMaterial);
+                /* colorCycle(scene.getObjectByName("pointLight")); */
             }
 
             // Build scene
