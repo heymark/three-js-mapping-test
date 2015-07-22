@@ -15,13 +15,9 @@
     <script>
         window.onload = function () {
 
-            if (!Detector.webgl) {
-                Detector.addGetWebGLMessage();
-            }
+            if (!Detector.webgl) { Detector.addGetWebGLMessage(); }
 
-            var ball, ballMaterial, ballModel, ballNormal, ballSpec, ballTexture;
-
-            var camera, color, container, pivot, renderer, scene;
+            var ball, camera, color, container, pivot, renderer, scene;
 
             function addLight() {
 
@@ -39,7 +35,7 @@
                 scene.add(directionalLight);
 
                 // Add hemisphere light
-                var hemiLight = new THREE.HemisphereLight(0xff0000, 0x00ffff, 0.025);
+                var hemiLight = new THREE.HemisphereLight(0xff0000, 0x00ffff, 0.02);
                 scene.add(hemiLight);
 
                 // Create point light
@@ -47,7 +43,7 @@
                 pointLight.position.set(1.5, 1, 1.5);
                 pointLight.name = "pointLight";
 
-                // Create pivot point and add point light
+                // Create pivot point and attach point light
                 var pivotPoint = new THREE.Object3D();
                 pivotPoint.position = (0, 1, 0);
                 pivotPoint.add(pointLight);
@@ -61,6 +57,8 @@
 
             function addModel() {
 
+                var ballMaterial, ballModel, ballNormal, ballTexture;
+
                 ballModel = new THREE.SphereGeometry(1.25, 32, 32);
 
                 // Load diffuse map
@@ -71,18 +69,14 @@
                 ballNormal = THREE.ImageUtils.loadTexture("images/165-rock-normal.jpg");
                 ballNormal.anisotropy = renderer.getMaxAnisotropy();
 
-                /* Load specular map
-                ballSpec = THREE.ImageUtils.loadTexture("images/grid.png");
-                ballSpec.anisotropy = renderer.getMaxAnisotropy(); */
-
                 // Set up material
                 ballMaterial = new THREE.MeshPhongMaterial({
                     map: ballTexture,
                     normalMap: ballNormal
                 });
                 ballMaterial.color = new THREE.Color("rgb(255, 0, 200)");
-                ballMaterial.shininess = 100;
                 ballMaterial.specular = new THREE.Color("rgb(255, 225, 200)");
+                ballMaterial.shininess = 100;
 
                 // Create and position ball
                 ball = new THREE.Mesh(ballModel, ballMaterial);
@@ -164,17 +158,17 @@
             }
 
             function render() {
+                
                 requestAnimationFrame(render);
                 renderer.render(scene, camera);
 
                 ball.rotation.x += 0.005;
                 ball.rotation.y += 0.005;
 
-                pivot.rotation.x = ball.rotation.x;
-                pivot.rotation.y = -5 * ball.rotation.y;
+                pivot.rotation.x += 0.005;
+                pivot.rotation.y -= 0.025;
 
-                colorCycle(ballMaterial);
-                /* colorCycle(scene.getObjectByName("pointLight")); */
+                colorCycle(ball.material);
             }
 
             // Build scene
