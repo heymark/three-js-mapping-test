@@ -7,6 +7,7 @@
     <meta name='viewport' content='width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0'>
     <link rel="stylesheet" type="text/css" href="style/style.css">
     <script src='js/three.min.js'></script>
+    <script src='js/dat.gui.min.js'></script>
     <script src='js/Detector.js'></script>
 </head>
 
@@ -17,7 +18,20 @@
 
             if (!Detector.webgl) { Detector.addGetWebGLMessage(); }
 
-            var ball, camera, color, container, pivot, renderer, scene;
+            var ball, camera, color, container, gui, pivot, renderer, scene;
+            
+            function addGui() {
+                
+                gui = new dat.GUI();
+                
+                gui.add(ball, "rotate ball");
+                gui.add(ball.material, "shininess").min(1).max(50).step(1);
+                gui.add(ball.material, "cycle colors");
+                gui.add(ball.material.color, "r").min(0).max(1).step(0.01).listen();
+                gui.add(ball.material.color, "g").min(0).max(1).step(0.01).listen();
+                gui.add(ball.material.color, "b").min(0).max(1).step(0.01).listen();
+                gui.add(ball.material, "bump depth").min(0).max(1).step(0.01);
+            }
 
             function addLight() {
 
@@ -74,14 +88,20 @@
                     map: ballTexture,
                     normalMap: ballNormal
                 });
-                ballMaterial.color = new THREE.Color("rgb(255, 0, 200)");
                 ballMaterial.specular = new THREE.Color("rgb(255, 225, 200)");
-                ballMaterial.shininess = 100;
+                ballMaterial.shininess = 50;
+                
+                // Add property hooks for dat.GUI
+                ballMaterial["cycle colors"] = true;
+                ballMaterial["bump depth"] = 1;
 
                 // Create and position ball
                 ball = new THREE.Mesh(ballModel, ballMaterial);
                 ball.position.set(0, 1, 0);
                 scene.add(ball);
+                
+                // Add property hooks for dat.GUI
+                ball["rotate ball"] = true;
             }
 
             function colorCycle(target) {
@@ -152,6 +172,9 @@
                 // Add light and model
                 addLight();
                 addModel();
+                
+                // Add GUI
+                addGui();
 
                 // Add window resize listener
                 window.addEventListener('resize', onWindowResize, false);
@@ -162,13 +185,18 @@
                 requestAnimationFrame(render);
                 renderer.render(scene, camera);
 
-                ball.rotation.x += 0.005;
-                ball.rotation.y += 0.005;
-
                 pivot.rotation.x += 0.005;
                 pivot.rotation.y -= 0.025;
+                
+                ball.material.normalScale.x = ball.material["bump depth"];
+                ball.material.normalScale.y = ball.material["bump depth"];
 
-                colorCycle(ball.material);
+                if(ball.material["cycle colors"] === true) { colorCycle(ball.material); }
+                
+                if(ball["rotate ball"] === true) {
+                    ball.rotation.x += 0.005;
+                    ball.rotation.y += 0.005;
+                }
             }
 
             // Build scene
